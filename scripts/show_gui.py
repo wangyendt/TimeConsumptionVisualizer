@@ -156,7 +156,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if item not in seen:
                 handle(item)
         for item in self.all_items ^ has_set_bg_color:
-            self.item_to_widget[item].setBackground(0, QBrush(Qt.black))
+            self.item_to_widget[item].setBackground(0, QBrush(Qt.transparent))
 
         # 增加指示线
         while self.F.trash:
