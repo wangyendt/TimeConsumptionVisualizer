@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'time_consumtion_show.ui'
+# Form implementation generated from reading ui file 'time_consumption_show.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -14,30 +14,30 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1280, 616)
+        MainWindow.resize(1280, 614)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gbDebugLog = QtWidgets.QGroupBox(self.centralwidget)
-        self.gbDebugLog.setGeometry(QtCore.QRect(520, 620, 1051, 271))
+        self.gbDebugLog.setGeometry(QtCore.QRect(30, 340, 451, 211))
         self.gbDebugLog.setObjectName("gbDebugLog")
         self.teAlgLog = QtWidgets.QTextEdit(self.gbDebugLog)
-        self.teAlgLog.setGeometry(QtCore.QRect(30, 50, 1001, 241))
+        self.teAlgLog.setGeometry(QtCore.QRect(20, 50, 411, 131))
         self.teAlgLog.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
         self.teAlgLog.setObjectName("teAlgLog")
         self.gbDebugPlt = QtWidgets.QGroupBox(self.centralwidget)
         self.gbDebugPlt.setGeometry(QtCore.QRect(530, 20, 641, 471))
         self.gbDebugPlt.setObjectName("gbDebugPlt")
         self.gbAlgClass = QtWidgets.QGroupBox(self.centralwidget)
-        self.gbAlgClass.setGeometry(QtCore.QRect(30, 20, 451, 521))
+        self.gbAlgClass.setGeometry(QtCore.QRect(30, 20, 451, 321))
         self.gbAlgClass.setObjectName("gbAlgClass")
         self.twAlgRules = QtWidgets.QTreeWidget(self.gbAlgClass)
-        self.twAlgRules.setGeometry(QtCore.QRect(20, 30, 411, 471))
+        self.twAlgRules.setGeometry(QtCore.QRect(20, 30, 411, 271))
         self.twAlgRules.setObjectName("twAlgRules")
         self.twAlgRules.headerItem().setText(0, "1")
-        self.horizontalSlider = QtWidgets.QSlider(self.centralwidget)
-        self.horizontalSlider.setGeometry(QtCore.QRect(530, 510, 641, 22))
-        self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
-        self.horizontalSlider.setObjectName("horizontalSlider")
+        self.hsCurFrame = QtWidgets.QSlider(self.centralwidget)
+        self.hsCurFrame.setGeometry(QtCore.QRect(530, 510, 641, 22))
+        self.hsCurFrame.setOrientation(QtCore.Qt.Horizontal)
+        self.hsCurFrame.setObjectName("hsCurFrame")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1280, 24))

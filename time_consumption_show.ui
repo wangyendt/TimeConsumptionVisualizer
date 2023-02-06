@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1280</width>
-    <height>616</height>
+    <height>614</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,10 +17,10 @@
    <widget class="QGroupBox" name="gbDebugLog">
     <property name="geometry">
      <rect>
-      <x>520</x>
-      <y>620</y>
-      <width>1051</width>
-      <height>271</height>
+      <x>30</x>
+      <y>340</y>
+      <width>451</width>
+      <height>211</height>
      </rect>
     </property>
     <property name="title">
@@ -29,10 +29,10 @@
     <widget class="QTextEdit" name="teAlgLog">
      <property name="geometry">
       <rect>
-       <x>30</x>
+       <x>20</x>
        <y>50</y>
-       <width>1001</width>
-       <height>241</height>
+       <width>411</width>
+       <height>131</height>
       </rect>
      </property>
      <property name="lineWrapMode">
@@ -59,7 +59,7 @@
       <x>30</x>
       <y>20</y>
       <width>451</width>
-      <height>521</height>
+      <height>321</height>
      </rect>
     </property>
     <property name="title">
@@ -71,7 +71,7 @@
        <x>20</x>
        <y>30</y>
        <width>411</width>
-       <height>471</height>
+       <height>271</height>
       </rect>
      </property>
      <column>
@@ -81,7 +81,7 @@
      </column>
     </widget>
    </widget>
-   <widget class="QSlider" name="horizontalSlider">
+   <widget class="QSlider" name="hsCurFrame">
     <property name="geometry">
      <rect>
       <x>530</x>

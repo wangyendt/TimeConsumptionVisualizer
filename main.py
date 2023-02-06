@@ -10,13 +10,12 @@
 # code is far away from bugs.
 """
 import collections
-
+from config import PATH
 from pywayne.data_structure import *
 
 
 def generate_tree_xml_from_log():
-    path = '/Users/wayne/Documents/work/project/20230116 slam数据采集和耗时统计/running_time/273393920.txt'
-    with open(path, 'r') as f:
+    with open(PATH, 'r') as f:
         lines = f.readlines()
         seen = set()
         paths = []
@@ -58,10 +57,11 @@ def read_tree_xml():
     ct = xml.read()
     print(ct.tag)
     print(ct.children[0].tag)
+    print(ct.children[0].children[0].children[0].children[0].tag)
 
 
 def main():
-    # generate_tree_xml_from_log()
+    generate_tree_xml_from_log()
     read_tree_xml()
 
 
