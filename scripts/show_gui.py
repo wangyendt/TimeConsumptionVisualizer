@@ -33,6 +33,7 @@ class PlotDbgVars(FigureCanvas):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.ax = self.fig.subplots(1, 1)
         self.trash = []
+        self.item = ''
         super(PlotDbgVars, self).__init__(self.fig)
 
     def plot_dbg_vars(self, data: np.ndarray, time_span: list):
@@ -45,6 +46,7 @@ class PlotDbgVars(FigureCanvas):
         self.ax.grid(True)
         self.ax.set_xlabel('time: (s)')
         self.ax.set_ylabel('running time: (ms)')
+        self.ax.set_title(f'cur item: {self.item}')
         self.draw()
 
 
@@ -56,6 +58,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.twAlgRules.clicked.connect(self.on_tree_clicked)
         self.hsCurFrame.valueChanged.connect(self.on_slider_value_changed)
         self.widget_root = None
+        self.grid_layout = None
         self.data = data
         self.time_span = time_span
         self.ct_tree = ct_tree
@@ -77,8 +80,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print('*' * 80)
 
     def plot_debug_vars(self, data):
-        grid_layout = QGridLayout(self.gbDebugPlt)
-        grid_layout.addWidget(self.F, 0, 1)
+        if not self.grid_layout:
+            self.grid_layout = QGridLayout(self.gbDebugPlt)
+            self.grid_layout.addWidget(self.F, 0, 1)
         self.F.plot_dbg_vars(data, self.time_span)
 
     def init(self):
@@ -120,6 +124,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         cur_item = self.twAlgRules.currentItem().text(0)
+        self.F.item = cur_item
         self.plot_debug_vars(self.data[cur_item])
         self.update_view(self.cur_time)
 
