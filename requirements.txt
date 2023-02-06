@@ -1,0 +1,5 @@
+matplotlib>=3.6.3
+numpy>=1.23.5
+pandas>=1.5.1
+PyQt5>=5.15.8
+pywayne>=1.0.0.3.7
