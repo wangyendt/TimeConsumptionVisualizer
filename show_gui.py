@@ -32,6 +32,7 @@ class PlotDbgVars(FigureCanvas):
     def __init__(self, width=15, height=8, dpi=100, bk_color_and_alpha=None):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.ax = self.fig.subplots(1, 1)
+        self.trash = []
         super(PlotDbgVars, self).__init__(self.fig)
 
     def plot_dbg_vars(self, data: np.ndarray, time_span: list):
@@ -62,6 +63,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.item_to_widget = dict()
         self.brothers_dict = collections.defaultdict(set)
         self.children_dict = collections.defaultdict(set)
+        self.cur_time = 0
         self.init()
         if DEBUG:
             print('*' * 80)
@@ -111,17 +113,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.twAlgRules.addTopLevelItem(self.widget_root)
         self.twAlgRules.expandAll()
         self.twAlgRules.show()
-        self.update_view(self.time_span[0])
+        self.cur_time = self.time_span[0]
 
     def on_tree_clicked(self):
         if self.data is None or self.widget_root is None:
             return
 
-        self.plot_debug_vars(self.data[self.twAlgRules.currentItem().text(0)])
+        cur_item = self.twAlgRules.currentItem().text(0)
+        self.plot_debug_vars(self.data[cur_item])
+        self.update_view(self.cur_time)
 
     def on_slider_value_changed(self):
         slider_value = self.hsCurFrame.value()
         cur_time = self.time_span[0] + (self.time_span[1] - self.time_span[0]) * slider_value // 99
+        self.cur_time = cur_time
         self.update_view(cur_time)
 
     def update_view(self, cur_time: int):
@@ -141,6 +146,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 color_green = np.array([0, 255, 0])
                 w = v / mx  # ((v - mn) / (mx - mn)) if mx > mn else 1
                 new_color = w * color_red + (1 - w) * color_green
+                new_color = new_color.astype(int).clip(0, 255)
                 self.item_to_widget[k].setBackground(0, QBrush(QColor(*new_color)))
                 has_set_bg_color.add(k)
 
@@ -151,6 +157,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 handle(item)
         for item in self.all_items ^ has_set_bg_color:
             self.item_to_widget[item].setBackground(0, QBrush(Qt.black))
+
+        # 增加指示线
+        while self.F.trash:
+            if self.F.trash[-1]:
+                self.F.trash[-1][0].remove()
+                del self.F.trash[-1][0]
+            self.F.trash.pop()
+        self.F.trash.append([self.F.ax.axvline((cur_time - self.time_span[0]) / 1e3, linestyle='--', linewidth=4, color='blue')])
+        self.F.draw()
 
 
 if __name__ == '__main__':
