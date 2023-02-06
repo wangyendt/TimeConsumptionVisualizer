@@ -1,7 +1,7 @@
 """
 @author: wangye(Wayne)
 @license: Apache Licence
-@file: main.py
+@file: generate_function_tree.py
 @time: 20230201
 @contact: wang121ye@hotmail.com
 @site:  wangyendt@github.com
@@ -14,14 +14,13 @@ from config import PATH
 from pywayne.data_structure import *
 
 
-def generate_tree_xml_from_log():
-    with open(PATH, 'r') as f:
+def generate_tree_xml_from_log(log_path, xml_path):
+    with open(log_path, 'r') as f:
         lines = f.readlines()
         seen = set()
         paths = []
         edges = collections.defaultdict(list)
-        root = 'TrackMonocular'
-        tree = ConditionTree(root)
+        root = ''
 
         for i, line in enumerate(lines[1:]):
             line = line.rstrip()
@@ -35,7 +34,6 @@ def generate_tree_xml_from_log():
                 else:
                     raise ValueError(f'len(items) should be 2 or 3, rather than {len(items)}')
                 seen.add(node)
-        print(edges)
 
         def helper(parent: str):
             children = edges[parent]
@@ -46,18 +44,19 @@ def generate_tree_xml_from_log():
 
         paths = collections.defaultdict(list)
         helper(root)
+        tree = ConditionTree(root)
         ct_paths = lambda x: {'tag': x, 'attrib': '', 'text': ''}
         [tree.append_by_path(list(map(ct_paths, p))) for p in paths.values()]
-        xml = XmlIO(file_write='config.xml')
+        xml = XmlIO(file_write=xml_path)
         xml.write(root, tree)
 
 
 def read_tree_xml():
-    xml = XmlIO('config.xml', 'config.xml')
+    xml = XmlIO('function_tree.xml', 'function_tree.xml')
     ct = xml.read()
-    print(ct.tag)
-    print(ct.children[0].tag)
-    print(ct.children[0].children[0].children[0].children[0].tag)
+    # print(ct.tag)
+    # print(ct.children[0].tag)
+    # print(ct.children[0].children[0].children[0].children[0].tag)
 
 
 def main():

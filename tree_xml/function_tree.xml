@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TrackMonocular>
+	<GrabImageMonocular>
+		<Frame>
+			<ExtractORB>
+				<ComputePyramid />
+				<ComputeKeyPointsOctTree />
+				<computeDescriptors />
+			</ExtractORB>
+		</Frame>
+		<Track>
+			<PreintegrateIMU />
+			<Initialization />
+			<ifNotOnlyTracking />
+		</Track>
+	</GrabImageMonocular>
+</TrackMonocular>

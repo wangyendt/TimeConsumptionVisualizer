@@ -170,8 +170,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 if __name__ == '__main__':
     from load_data import load_time_consumption_data
+    from generate_function_tree import generate_tree_xml_from_log
+    from config import PATH
 
-    xml = XmlIO('config.xml', 'config.xml')
+    path = PATH if len(sys.argv) <= 1 else sys.argv[1]
+    xml_path = '../tree_xml/function_tree.xml'
+    generate_tree_xml_from_log(PATH, xml_path)
+    xml = XmlIO(xml_path, xml_path)
     app = QApplication(sys.argv)
     data, time_span = load_time_consumption_data()
     ct_tree = xml.read()
