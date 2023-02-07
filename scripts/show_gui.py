@@ -67,6 +67,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.brothers_dict = collections.defaultdict(set)
         self.children_dict = collections.defaultdict(set)
         self.cur_time = 0
+        self.cur_item = ''
         self.init()
         if DEBUG:
             print('*' * 80)
@@ -118,21 +119,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.twAlgRules.expandAll()
         self.twAlgRules.show()
         self.cur_time = self.time_span[0]
+        self.cur_item = ''
 
     def on_tree_clicked(self):
         if self.data is None or self.widget_root is None:
             return
 
-        cur_item = self.twAlgRules.currentItem().text(0)
-        self.F.item = cur_item
-        self.plot_debug_vars(self.data[cur_item])
+        self.cur_item = self.twAlgRules.currentItem().text(0)
+        self.F.item = self.cur_item
+        self.plot_debug_vars(self.data[self.cur_item])
         self.update_view(self.cur_time)
 
     def on_slider_value_changed(self):
         slider_value = self.hsCurFrame.value()
-        cur_time = self.time_span[0] + (self.time_span[1] - self.time_span[0]) * slider_value // 99
-        self.cur_time = cur_time
-        self.update_view(cur_time)
+        self.cur_time = self.time_span[0] + (self.time_span[1] - self.time_span[0]) * slider_value // 99
+        if not self.cur_item: return
+        self.update_view(self.cur_time)
 
     def update_view(self, cur_time: int):
         def handle(item: str):
@@ -155,11 +157,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.item_to_widget[k].setBackground(0, QBrush(QColor(*new_color)))
                 has_set_bg_color.add(k)
 
+        self.teAlgLog.setTextColor(Qt.red)
+        self.teAlgLog.append('='*20)
+        self.teAlgLog.setTextColor(Qt.green)
         seen = set()
         has_set_bg_color = set()
         for item in self.all_items:
             if item not in seen:
                 handle(item)
+        total_elapsed_time = 0
+        cur_elapsed_time = 0
+        for it in self.children_dict[self.cur_item] | {self.cur_item}:
+            ts = self.data[it][:, 0]
+            time_consumption = self.data[it][:, 1]
+            right_side_idx = np.searchsorted(ts, cur_time, 'right')
+            right_side_idx = min(right_side_idx, len(ts) - 1)
+            if abs(cur_time - ts[right_side_idx]) > 100:
+                continue
+            if it == self.cur_item:
+                cur_elapsed_time = time_consumption[right_side_idx]
+            else:
+                total_elapsed_time += time_consumption[right_side_idx]
+        self.teAlgLog.append(f'Cur item {self.cur_item} elapsed {cur_elapsed_time:.3f}ms')
+        if len(self.children_dict[self.cur_item]) > 0:
+            self.teAlgLog.append(f'{self.cur_item}\'s children elapsed {total_elapsed_time:.3f}ms in total')
+        self.teAlgLog.setTextColor(Qt.black)
+
         for item in self.all_items ^ has_set_bg_color:
             self.item_to_widget[item].setBackground(0, QBrush(Qt.transparent))
 
