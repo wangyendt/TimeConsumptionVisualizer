@@ -64,11 +64,14 @@ SOFTWARE.
 
 ## 3. Run Examples
 
-### 3.1 set PATH in config.py as '../example/270909067.txt'
+First, set PATH in config.py as '../example/270909067.txt'
 
-### 3.2 cd scripts
+Second, run command in shell:
 
-### 3.3 python ./show_gui.py
+```bash
+cd scripts
+python ./show_gui.py
+```
 
 ## 4. Video
 
