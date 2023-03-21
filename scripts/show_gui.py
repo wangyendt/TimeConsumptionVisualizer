@@ -80,6 +80,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 print(k, v)
             print('*' * 80)
 
+        self.teAlgLog.setTextColor(Qt.green)
+        self.teAlgLog.setText(path)
+        self.teAlgLog.setTextColor(Qt.black)
+
     def plot_debug_vars(self, data):
         if not self.grid_layout:
             self.grid_layout = QGridLayout(self.gbDebugPlt)
@@ -158,7 +162,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 has_set_bg_color.add(k)
 
         self.teAlgLog.setTextColor(Qt.red)
-        self.teAlgLog.append('='*20)
+        self.teAlgLog.append('=' * 20)
         self.teAlgLog.setTextColor(Qt.green)
         seen = set()
         has_set_bg_color = set()
