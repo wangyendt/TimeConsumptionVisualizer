@@ -128,24 +128,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.cur_item = self.twAlgRules.currentItem().text(0)
         self.F.item = self.cur_item
         self.plot_debug_vars(self.data[self.cur_item])
-        self.update_view(self.cur_time)
+        self.update_view()
 
     def on_slider_value_changed(self):
         slider_value = self.hsCurFrame.value()
         self.cur_time = self.time_span[0] + (self.time_span[1] - self.time_span[0]) * slider_value // 99
         if not self.cur_item: return
-        self.update_view(self.cur_time)
+        self.update_view()
 
-    def update_view(self, cur_time: int):
+    def update_view(self):
         def handle(item: str):
             res = collections.defaultdict(int)
             for it in {item} | self.brothers_dict[item]:
                 seen.add(it)
                 ts = self.data[it][:, 0]
                 time_consumption = self.data[it][:, 1]
-                right_side_idx = np.searchsorted(ts, cur_time, 'right')
+                right_side_idx = np.searchsorted(ts, self.cur_time, 'right')
                 right_side_idx = min(right_side_idx, len(ts) - 1)
-                if abs(cur_time - ts[right_side_idx]) <= 100:
+                if abs(self.cur_time - ts[right_side_idx]) <= 100:
                     res[it] = time_consumption[right_side_idx]
             mn, mx = min(res.values() or [0]), max(res.values() or [0])
             for k, v in res.items():
@@ -165,22 +165,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for item in self.all_items:
             if item not in seen:
                 handle(item)
+        total_num_of_nearby_children = 0
         total_elapsed_time = 0
         cur_elapsed_time = 0
         for it in self.children_dict[self.cur_item] | {self.cur_item}:
             ts = self.data[it][:, 0]
             time_consumption = self.data[it][:, 1]
-            right_side_idx = np.searchsorted(ts, cur_time, 'right')
+            right_side_idx = np.searchsorted(ts, self.cur_time, 'right')
             right_side_idx = min(right_side_idx, len(ts) - 1)
-            if abs(cur_time - ts[right_side_idx]) > 100:
+            if abs(self.cur_time - ts[right_side_idx]) > 100:
                 continue
             if it == self.cur_item:
                 cur_elapsed_time = time_consumption[right_side_idx]
             else:
+                total_num_of_nearby_children += 1
                 total_elapsed_time += time_consumption[right_side_idx]
         self.teAlgLog.append(f'Cur item {self.cur_item} elapsed {cur_elapsed_time:.3f}ms')
         if len(self.children_dict[self.cur_item]) > 0:
-            self.teAlgLog.append(f'{self.cur_item}\'s children elapsed {total_elapsed_time:.3f}ms in total')
+            self.teAlgLog.append(f'{self.cur_item}\'s {total_num_of_nearby_children} children elapsed {total_elapsed_time:.3f}ms in total')
         self.teAlgLog.setTextColor(Qt.black)
 
         for item in self.all_items ^ has_set_bg_color:
@@ -192,7 +194,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.F.trash[-1][0].remove()
                 del self.F.trash[-1][0]
             self.F.trash.pop()
-        self.F.trash.append([self.F.ax.axvline((cur_time - self.time_span[0]) / 1e3, linestyle='--', linewidth=4, color='blue')])
+        self.F.trash.append([self.F.ax.axvline((self.cur_time - self.time_span[0]) / 1e3, linestyle='--', linewidth=4, color='blue')])
         self.F.draw()
 
 
