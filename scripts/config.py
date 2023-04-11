@@ -17,5 +17,5 @@ if pkgutil.find_loader("pywayne"):
     from pywayne.tools import list_all_files
     PATH = sorted(list_all_files('../example/running_time'), key=lambda x: os.path.getctime(x))[-1]
 else:
-    PATH = '../example/270909067.txt'
+    PATH = '../example/running_time/270909067.txt'
 DEBUG = False

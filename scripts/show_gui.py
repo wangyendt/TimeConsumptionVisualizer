@@ -14,6 +14,7 @@ import collections
 import sys
 
 import matplotlib
+from matplotlib.ticker import FixedLocator
 import numpy as np
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -21,11 +22,30 @@ from PyQt5.QtWidgets import *
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from pywayne.data_structure import *
+from pywayne.tools import *
 
 from config import DEBUG
 from time_consumption_show import *
 
 matplotlib.use("Qt5Agg")
+
+
+def on_button_press(event):
+    if event.xdata and event.ydata:
+        main.click_left = (event.xdata, event.ydata)
+
+
+def on_button_release(event):
+    if event.xdata and event.ydata:
+        main.click_right = (event.xdata, event.ydata)
+        if main.click_right[0] != main.click_left[0]:
+            main.calc_selected_statistics()
+
+
+binding_map = {
+    'button_press_event': on_button_press,
+    'button_release_event': on_button_release,
+}
 
 
 class PlotDbgVars(FigureCanvas):
@@ -36,6 +56,7 @@ class PlotDbgVars(FigureCanvas):
         self.item = ''
         super(PlotDbgVars, self).__init__(self.fig)
 
+    @binding_press_release(binding_map)
     def plot_dbg_vars(self, data: np.ndarray, time_span: list):
         ts = data[:, 0].astype(float)
         ts -= time_span[0]
@@ -48,6 +69,32 @@ class PlotDbgVars(FigureCanvas):
         self.ax.set_ylabel('running time: (ms)')
         self.ax.set_title(f'cur item: {self.item}')
         self.draw()
+        return self.fig
+
+
+class PlotDbgPie(FigureCanvas):
+    def __init__(self, width=15, height=8, dpi=70):
+        self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.ax = self.fig.subplots(1, 1)
+        super(PlotDbgPie, self).__init__(self.fig)
+
+    def plot_dbg_pie(self, children_elapsed_time: dict):
+        sizes, labels = children_elapsed_time.values(), list(children_elapsed_time.keys())
+
+        self.ax.cla()
+
+        # 绘制饼图
+        wedges, _ = self.ax.pie(sizes, startangle=90)
+
+        # 计算百分比
+        total = sum(sizes)
+        percentages = [f'{label} - {value / total * 100:.1f}%' for label, value in children_elapsed_time.items()]
+
+        # 创建图例
+        self.ax.legend(wedges, percentages, loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+
+        self.draw()
+        return self.fig
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -55,10 +102,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__()
         self.setupUi(self)
         self.F = PlotDbgVars()
+        self.Pie = PlotDbgPie()
+        self.click_left = (-1, -1)
+        self.click_right = (-1, -1)
         self.twAlgRules.clicked.connect(self.on_tree_clicked)
         self.hsCurFrame.valueChanged.connect(self.on_slider_value_changed)
         self.widget_root = None
-        self.grid_layout = None
+        self.gridF_layout = None
+        self.gridP_layout = None
+        self.text_cursor = self.teAlgLog.textCursor()
         self.data = data
         self.time_span = time_span
         self.ct_tree = ct_tree
@@ -80,14 +132,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 print(k, v)
             print('*' * 80)
 
+        if not self.gridF_layout:
+            self.gridF_layout = QGridLayout(self.gbDebugPlt)
+            self.gridF_layout.addWidget(self.F, 0, 1)
+        if not self.gridP_layout:
+            self.gridP_layout = QGridLayout(self.gbDebugPie)
+            self.gridP_layout.addWidget(self.Pie, 0, 1)
+
         self.teAlgLog.setTextColor(Qt.green)
         self.teAlgLog.setText(path)
         self.teAlgLog.setTextColor(Qt.black)
 
     def plot_debug_vars(self, data):
-        if not self.grid_layout:
-            self.grid_layout = QGridLayout(self.gbDebugPlt)
-            self.grid_layout.addWidget(self.F, 0, 1)
         self.F.plot_dbg_vars(data, self.time_span)
 
     def init(self):
@@ -131,6 +187,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.cur_item = self.twAlgRules.currentItem().text(0)
         self.F.item = self.cur_item
+        self.Pie.item = self.cur_item
         self.plot_debug_vars(self.data[self.cur_item])
         self.update_view()
 
@@ -172,6 +229,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         total_num_of_nearby_children = 0
         total_elapsed_time = 0
         cur_elapsed_time = 0
+        children_elapsed_time = collections.defaultdict(int)
         for it in self.children_dict[self.cur_item] | {self.cur_item}:
             ts = self.data[it][:, 0]
             time_consumption = self.data[it][:, 1]
@@ -184,10 +242,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 total_num_of_nearby_children += 1
                 total_elapsed_time += time_consumption[right_side_idx]
+                children_elapsed_time[it] = time_consumption[right_side_idx]
         self.teAlgLog.append(f'Cur item {self.cur_item} elapsed {cur_elapsed_time:.3f}ms')
         if len(self.children_dict[self.cur_item]) > 0:
             self.teAlgLog.append(f'{self.cur_item}\'s {total_num_of_nearby_children} children elapsed {total_elapsed_time:.3f}ms in total')
         self.teAlgLog.setTextColor(Qt.black)
+        self.text_cursor.movePosition(QTextCursor.End)
+        self.teAlgLog.setTextCursor(self.text_cursor)
+
+        children_elapsed_time = dict(sorted(children_elapsed_time.items()))
+        self.Pie.plot_dbg_pie(children_elapsed_time)
 
         for item in self.all_items ^ has_set_bg_color:
             self.item_to_widget[item].setBackground(0, QBrush(Qt.transparent))
@@ -200,6 +264,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.F.trash.pop()
         self.F.trash.append([self.F.ax.axvline((self.cur_time - self.time_span[0]) / 1e3, linestyle='--', linewidth=4, color='blue')])
         self.F.draw()
+
+    def calc_selected_statistics(self):
+        left_x, right_x = self.click_left[0], self.click_right[0]
+        if left_x > right_x:
+            left_x, right_x = right_x, left_x
+        selected_time_left = max(self.time_span[0] + left_x * 1000, self.time_span[0])
+        selected_time_right = min(self.time_span[0] + right_x * 1000, self.time_span[1])
+        time_consumption_dict = collections.defaultdict(int)
+        for it in self.children_dict[self.cur_item] | {self.cur_item}:
+            ts = self.data[it][:, 0]
+            time_consumption = self.data[it][:, 1]
+            left_side_idx = np.searchsorted(ts, selected_time_left, 'left')
+            left_side_idx = max(0, left_side_idx)
+            right_side_idx = np.searchsorted(ts, selected_time_right, 'right')
+            right_side_idx = min(right_side_idx, len(ts) - 1)
+            # print(ts[0], ts[-1], selected_time_left, selected_time_right, left_x, right_x)
+            # print(left_side_idx, right_side_idx)
+            time_consumption_dict[it] = time_consumption[left_side_idx:right_side_idx + 1].mean()
+        children_time_consumption_total = 0
+        print('*' * 80)
+        for k, v in time_consumption_dict.items():
+            if k != self.cur_item:
+                children_time_consumption_total += v
+            print(f'{k}: {v:.4f}ms / {time_consumption_dict[self.cur_item]:.4f}ms')
+        print('*' * 80)
 
 
 if __name__ == '__main__':
