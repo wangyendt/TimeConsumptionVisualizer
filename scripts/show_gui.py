@@ -284,10 +284,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             time_consumption_dict[it] = time_consumption[left_side_idx:right_side_idx + 1].mean()
         children_time_consumption_total = 0
         print('*' * 80)
-        for k, v in time_consumption_dict.items():
+        for k, v in sorted(time_consumption_dict.items()):
             if k != self.cur_item:
                 children_time_consumption_total += v
-            print(f'{k}: {v:.4f}ms / {time_consumption_dict[self.cur_item]:.4f}ms')
+                print(f'{k}: {v:.4f}ms / {time_consumption_dict[self.cur_item]:.4f}ms --- {100 * v / time_consumption_dict[self.cur_item]:.4f}%')
         print('*' * 80)
 
 
